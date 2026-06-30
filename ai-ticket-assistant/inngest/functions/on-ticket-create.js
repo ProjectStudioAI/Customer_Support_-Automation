@@ -3,7 +3,8 @@ import Ticket from "../../models/ticket.js";
 import User from "../../models/user.js";
 import { NonRetriableError } from "inngest";
 import { sendMail } from "../../utils/mailer.js";
-import analyzeTicket from "../../utils/ai.js";
+import classifyTicket from "../../utils/ai.js";
+import { findSimilarTickets, ensureCollection } from "../../utils/rag.js";
 export const onTicketCreated = inngest.createFunction(
   { id: "on-ticket-created", 
     retries: 2,
@@ -96,100 +97,79 @@ export const onTicketCreated = inngest.createFunction(
       });
 
       // 4. AI PROCESSING STEP
-      const aiResult = await step.run("ai-triage", async () => {
+      const aiResult = await step.run("ai-classify", async () => {
         try {
-          console.log("Sending ticket to AI for analysis:", ticket._id.toString());
-          const aiResponse = await analyzeTicket(ticket);
-          return {
-            aiResponse,
-            ticketMongooseId: ticket._id.toString(),
-          };
-        } catch (error) {
-          console.error("AI analysis failed:", error.message);
-          return {
-            aiResponse: null,
-            ticketMongooseId: ticket._id.toString(),
-          };
+          await ensureCollection();
+          const text = `${ticket.title} ${ticket.description}`;
+          const [classification, similarTickets] = await Promise.all([
+            classifyTicket(ticket),
+            findSimilarTickets(text),
+          ]);
+          const isDuplicate = similarTickets.some((t) => t.isDuplicate);
+          if (isDuplicate) console.log(`Possible duplicate detected: ${ticketId}`);
+          return { ...classification, similarTickets, isDuplicate };
+        } catch (err) {
+          console.error("ai-classify failed:", err.message);
+          return { ticketType: "Request", department: null, priority: "medium", similarTickets: [], isDuplicate: false };
         }
       });
 
-      const { aiResponse, ticketMongooseId } = aiResult;
+      const ticketMongooseId = ticket._id.toString();
 
       // 5. UPDATE TICKET STATUS AND DATA FROM AI
-      const relatedskills = await step.run("update-ticket-data", async () => {
+      const department = await step.run("update-ticket-data", async () => {
         try {
-          let updateFields = {
-            status: "IN_PROGRESS",
-          };
-
-          let skills = [];
-          if (aiResponse && aiResponse.priority) {
-            const validatedPriority = !["low", "medium", "high"].includes(
-              aiResponse.priority?.toLowerCase()
-            )
-              ? "medium"
-              : aiResponse.priority.toLowerCase();
-
-            updateFields = {
-              ...updateFields,
-              priority: validatedPriority,
-              helpfulNotes: aiResponse.helpfulNotes || null,
-              relatedSkills: aiResponse.relatedSkills || [],
-            };
-            skills = aiResponse.relatedSkills || [];
-          }
-
           const updatedTicket = await Ticket.findByIdAndUpdate(
-            ticketMongooseId,
-            updateFields,
+            ticketId,
+            {
+              status: "IN_PROGRESS",
+              ticketType: aiResult.ticketType,
+              department: aiResult.department,
+              priority: aiResult.priority,
+              similarTickets: aiResult.similarTickets,
+              relatedSkills: [],
+            },
             { new: true, runValidators: true }
           );
-
-          if (!updatedTicket) {
-            throw new NonRetriableError(
-              `DB UPDATE FAILED: Ticket not found for ID: ${ticketMongooseId}`
-            );
-          }
-          console.log(
-            `✅ Ticket ${ticketMongooseId} updated - Priority: ${updateFields.priority}, Status: ${updateFields.status}`
-          );
-
-          return skills;
-        } catch (error) {
-          console.error("Failed to update ticket:", error.message);
-          return [];
+          if (!updatedTicket) throw new NonRetriableError(`Ticket not found: ${ticketId}`);
+          console.log(`Ticket ${ticketId} updated — Type: ${aiResult.ticketType}, Dept: ${aiResult.department}, Priority: ${aiResult.priority}`);
+          return aiResult.department;
+        } catch (err) {
+          console.error("update-ticket-data failed:", err.message);
+          return null;
         }
       });
 
       // 6. ASSIGN MODERATOR
       const moderator = await step.run("assign-moderator", async () => {
         try {
-          // Find a moderator with matching skills
-          let user = await User.findOne({
-            role: "moderator",
-            skills: { $in: relatedskills },
-          })
-            .sort({ ticketsAssignedCount: 1 })
-            .exec();
+          let user = null;
 
-          // Fallback to admin if no moderator found
+          if (department) {
+            user = await User.findOne({ role: "moderator", department: department })
+              .sort({ ticketsAssignedCount: 1 })
+              .exec();
+          }
+
+          if (!user) {
+            user = await User.findOne({ role: "moderator" })
+              .sort({ ticketsAssignedCount: 1 })
+              .exec();
+          }
+
           if (!user) {
             user = await User.findOne({ role: "admin" });
           }
 
           if (user) {
-            await Ticket.findByIdAndUpdate(ticketMongooseId, {
-              assignedTo: user._id,
-            });
-
-            await User.findByIdAndUpdate(user._id, {
-              $inc: { ticketsAssignedCount: 1 },
-            });
+            await Ticket.findByIdAndUpdate(ticketId, { assignedTo: user._id });
+            await User.findByIdAndUpdate(user._id, { $inc: { ticketsAssignedCount: 1 } });
+            console.log(`Assigned ${ticketId} to ${user.email}`);
           }
 
           return user;
-        } catch (error) {
-          console.error("Failed to assign moderator:", error.message);
+        } catch (err) {
+          console.error("assign-moderator failed:", err.message);
           return null;
         }
       });
@@ -233,8 +213,16 @@ export const onTicketCreated = inngest.createFunction(
                         <strong>Priority:</strong> <span class="priority priority-${finalTicket.priority}">${finalTicket.priority?.toUpperCase() || "MEDIUM"}</span><br>
                         <strong>Created:</strong> ${new Date(finalTicket.createdAt).toLocaleDateString()}
                       </div>
-                      ${finalTicket.helpfulNotes ? `<div class="notes"><strong>📝 AI-Generated Notes:</strong><br>${finalTicket.helpfulNotes}</div>` : ""}
-                      ${finalTicket.relatedSkills && finalTicket.relatedSkills.length > 0 ? `<p><strong>Related Skills:</strong> ${finalTicket.relatedSkills.join(", ")}</p>` : ""}
+                      ${aiResult.ticketType ? `<p><strong>Type:</strong> ${aiResult.ticketType}</p>` : ""}
+                      ${aiResult.department ? `<p><strong>Department:</strong> ${aiResult.department}</p>` : ""}
+                      ${aiResult.similarTickets && aiResult.similarTickets.length > 0
+                        ? `<div class="notes"><strong>Similar past tickets:</strong><br>
+                            ${aiResult.similarTickets.map((t, i) =>
+                              `<p><strong>#${i+1}:</strong> ${t.title} (${Math.round(t.score*100)}% match)<br>
+                              ${t.response ? `<em>${t.response.substring(0, 120)}...</em>` : ""}</p>`
+                            ).join("")}
+                          </div>`
+                        : ""}
                       <p>Please review the ticket and respond to the customer as soon as possible.</p>
                       <p>Best regards,<br>AI Ticket Assistant Team</p>
                     </div>

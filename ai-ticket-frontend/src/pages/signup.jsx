@@ -31,9 +31,7 @@ export default function SignupPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // Save email for verification page
         localStorage.setItem("signupEmail", form.email);
-        // Redirect to email verification page
         navigate("/verify-email", { state: { email: form.email } });
       } else {
         setError(data.error || "Signup failed");
@@ -47,14 +45,19 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200">
-      <div className="card w-full max-w-sm shadow-xl bg-base-100">
-        <form onSubmit={handleSignup} className="card-body">
-          <h2 className="card-title justify-center">Sign Up</h2>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+        <h1 className="text-2xl font-semibold text-gray-900 text-center mb-1">
+          Create account
+        </h1>
+        <p className="text-sm text-gray-500 text-center mb-6">
+          Sign up to get started
+        </p>
 
+        <form onSubmit={handleSignup}>
           {error && (
-            <div className="alert alert-error">
-              <span>{error}</span>
+            <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-700">
+              {error}
             </div>
           )}
 
@@ -62,7 +65,7 @@ export default function SignupPage() {
             type="email"
             name="email"
             placeholder="Email"
-            className="input input-bordered"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm mb-4"
             value={form.email}
             onChange={handleChange}
             required
@@ -72,32 +75,30 @@ export default function SignupPage() {
             type="password"
             name="password"
             placeholder="Password"
-            className="input input-bordered"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm mb-4"
             value={form.password}
             onChange={handleChange}
             required
           />
 
-          <div className="form-control mt-4">
-            <button
-              type="submit"
-              className="btn btn-primary w-full"
-              disabled={loading}
-            >
-              {loading ? "Signing up..." : "Sign Up"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors text-sm disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? "Signing up..." : "Create Account"}
+          </button>
 
-          <div className="text-center text-sm mt-4">
+          <p className="text-center text-sm text-gray-500 mt-4">
             Already have an account?{" "}
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="btn btn-link btn-sm p-0"
+              className="text-indigo-600 hover:underline font-medium"
             >
-              Login
+              Sign in
             </button>
-          </div>
+          </p>
         </form>
       </div>
     </div>

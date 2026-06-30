@@ -84,11 +84,11 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-6">Admin Panel - Manage Users</h1>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Admin Panel — Manage Users</h1>
       <input
         type="text"
-        className="input input-bordered w-full mb-6"
+        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm mb-6"
         placeholder="Search by email"
         value={searchQuery}
         onChange={handleSearch}
@@ -96,16 +96,16 @@ export default function AdminPanel() {
       {filteredUsers.map((user) => (
         <div
           key={user._id}
-          className="bg-base-100 shadow rounded p-4 mb-4 border"
+          className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-4"
         >
-          <p>
-            <strong>Email:</strong> {user.email}
+          <p className="text-sm text-gray-700">
+            <span className="font-medium text-gray-900">Email:</span> {user.email}
           </p>
-          <p>
-            <strong>Current Role:</strong> {user.role}
+          <p className="text-sm text-gray-700">
+            <span className="font-medium text-gray-900">Current Role:</span> {user.role}
           </p>
-          <p>
-            <strong>Skills:</strong>{" "}
+          <p className="text-sm text-gray-700">
+            <span className="font-medium text-gray-900">Skills:</span>{" "}
             {user.skills && user.skills.length > 0
               ? user.skills.join(", ")
               : "N/A"}
@@ -114,7 +114,7 @@ export default function AdminPanel() {
           {editingUser === user.email ? (
             <div className="mt-4 space-y-2">
               <select
-                className="select select-bordered w-full"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 value={formData.role}
                 onChange={(e) =>
                   setFormData({ ...formData, role: e.target.value })
@@ -128,7 +128,7 @@ export default function AdminPanel() {
               <input
                 type="text"
                 placeholder="Comma-separated skills"
-                className="input input-bordered w-full"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                 value={formData.skills}
                 onChange={(e) =>
                   setFormData({ ...formData, skills: e.target.value })
@@ -137,13 +137,13 @@ export default function AdminPanel() {
 
               <div className="flex gap-2">
                 <button
-                  className="btn btn-success btn-sm"
+                  className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                   onClick={handleUpdate}
                 >
                   Save
                 </button>
                 <button
-                  className="btn btn-ghost btn-sm"
+                  className="text-sm text-gray-600 hover:text-gray-900 px-4 py-2"
                   onClick={() => setEditingUser(null)}
                 >
                   Cancel
@@ -152,7 +152,7 @@ export default function AdminPanel() {
             </div>
           ) : (
             <button
-              className="btn btn-primary btn-sm mt-2"
+              className="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               onClick={() => handleEditClick(user)}
             >
               Edit

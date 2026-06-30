@@ -24,7 +24,11 @@ function CheckAuth({ children, protectedRoute }) {
   }, [navigate, protectedRoute]);
 
   if (loading) {
-    return <div>loading...</div>;
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center text-gray-500 text-sm">
+        Loading...
+      </div>
+    );
   }
   return children;
 }

@@ -91,7 +91,7 @@ export const getTicket = async (req, res) => {
     ticket = await Ticket.findOne({
       createdBy: user._id,
       _id: id,
-    }).select("title description status createdAt priority assignedTo relatedSkills helpfulNotes"); // <-- ADD THESE FIELDS
+    }).select("title description status createdAt priority assignedTo ticketType department similarTickets resolutionNote resolvedAt");
     // console.log("Logged-in User ID (req.user._id):", user._id.toString());
     // console.log("Ticket ID from params (id):", id);
   }
@@ -104,6 +104,51 @@ export const getTicket = async (req, res) => {
     return res.status(200).json({ ticket });
   } catch (error) {
     console.error("Error fetching ticket", error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const resolveTicket = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { resolutionNote } = req.body;
+    const user = req.user;
+
+    if (user.role === "user") {
+      return res.status(403).json({ message: "Not authorized to resolve tickets" });
+    }
+
+    if (!resolutionNote || resolutionNote.trim().length < 10) {
+      return res.status(400).json({ message: "Resolution note required (min 10 characters)" });
+    }
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid ticket id" });
+    }
+
+    const ticket = await Ticket.findByIdAndUpdate(
+      id,
+      {
+        status: "RESOLVED",
+        resolutionNote: resolutionNote.trim(),
+        resolvedAt: new Date(),
+        resolvedBy: user._id,
+      },
+      { new: true }
+    ).populate("assignedTo", ["email", "_id"]);
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    await inngest.send({
+      name: "ticket/resolved",
+      data: { ticketId: ticket._id.toString() },
+    });
+
+    return res.status(200).json({ message: "Ticket resolved successfully", ticket });
+  } catch (error) {
+    console.error("Error resolving ticket:", error.message);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };

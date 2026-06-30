@@ -1,302 +1,188 @@
-// import { createAgent, gemini } from "@inngest/agent-kit";
+import { pipeline, AutoTokenizer } from "@xenova/transformers";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// const analyzeTicket = async (ticket) => {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-//   const allowedSkills = [
-//         "Troubleshooting", "API Debugging", "Hardware Diagnosis", "System Administration", 
-//         "Network Configuration", "Cloud Services (e.g., AWS/Azure)", "Security Operations", 
-//         "Software Development (Specific Language)", "Database Management", "Incident Management", 
-//         "System Monitoring", "Root Cause Analysis", "Payment Processing", "Invoicing", 
-//         "Accounting Software", "Compliance (e.g., PCI)", "Product Knowledge", 
-//         "CRM Management", "Needs Assessment", "Proposal Writing", "Logistics Management", 
-//         "Refund Processing", "Inventory Tracking", "HR Policy Knowledge", "Legal Compliance", 
-//         "Confidentiality", "Customer Service", "Technical Writing", "Documentation", 
-//         "Content Knowledge"
-//     ];
-//     
-//     // Create a string representation of the skills for the prompt
-//     const skillsListString = allowedSkills.map(s => `"${s}"`).join(", ");
+const TICKET_TYPES = ["Incident", "Request", "Problem", "Change"];
 
-//     const systemPrompt = `You are an expert AI assistant that processes technical support tickets. 
+const DEPARTMENTS = [
+  "Technical Support",
+  "Billing",
+  "Account Management",
+  "Returns and Exchanges",
+  "General Enquiry",
+  "Security",
+  "Network Operations",
+  "Software Support",
+];
 
-// Your job is to:
-// 1. Summarize the issue.
-// 2. Estimate its priority.
-// 3. Provide helpful notes and resource links for human moderators.
-// 4. List relevant technical skills required.
+const PRIORITY_LABELS = ["low", "medium", "high"];
 
-// **CRITICAL CONSTRAINT: The 'relatedSkills' array MUST ONLY contain skills from the following predefined list. If a ticket requires a skill not on this list, select the closest general skill (e.g., use "Troubleshooting" instead of "specific_brand_fix"): [${skillsListString}].**
+const PRIORITY_MODEL_DIR = path.join(__dirname, "../models/priority_model_onnx");
+const PRIORITY_MODEL_PATH = path.join(PRIORITY_MODEL_DIR, "model.onnx");
 
-// IMPORTANT:
-// - Respond with *only* valid raw JSON.
-// - Do NOT include markdown, code fences, comments, or any extra formatting.
-// - The format must be a raw JSON object.
+let _classifier = null;
+let _embedder = null;
+let _prioritySession = null;
+let _priorityTokenizer = null;
+let _ort = null;
+let _priorityDisabled = false;
 
-// Repeat: Do not wrap your output in markdown or code fences.`;
-
-//     const supportAgent = createAgent({
-//         model: gemini({
-//             model: "gemini-2.5-pro",
-//             apiKey: process.env.GEMINI_API_KEY,
-//         }),
-//         name: "AI Ticket Triage Assistant",
-//         system: systemPrompt,
-//     });
-
-//     const response =
-//         await supportAgent.run(`You are a ticket triage agent. Only return a strict JSON object with no extra text, headers, or markdown.
-//         
-// Analyze the following support ticket and provide a JSON object with:
-
-// - summary: A short 1-2 sentence summary of the issue.
-// - priority: One of "low", "medium", or "high".
-// - helpfulNotes: A detailed technical explanation that a moderator can use to solve this issue. Include useful external links or resources if possible.
-// - relatedSkills: An array of relevant skills required to solve the issue. **CRITICAL: The skills must be chosen exclusively from the predefined list of allowed skills.**
-
-// Respond ONLY in this JSON format and do not include any other text or markdown in the answer:
-
-// {
-// "summary": "Short summary of the ticket",
-// "priority": "high",
-// "helpfulNotes": "Here are useful tips...",
-// "relatedSkills": ["Troubleshooting", "System Administration"] // e.g., only from the allowed list
-// }
-
-// ---
-
-// Ticket information:
-
-// - Title: ${ticket.title}
-// - Description: ${ticket.description}`);
-// //   const supportAgent = createAgent({
-// //     model: gemini({
-// //       model: "gemini-2.5-pro",
-// //       apiKey: process.env.GEMINI_API_KEY,
-// //     }),
-// //     name: "AI Ticket Triage Assistant",
-// //     system: `You are an expert AI assistant that processes technical support tickets. 
-
-// // Your job is to:
-// // 1. Summarize the issue.
-// // 2. Estimate its priority.
-// // 3. Provide helpful notes and resource links for human moderators.
-// // 4. List relevant technical skills required.
-
-// // IMPORTANT:
-// // - Respond with *only* valid raw JSON.
-// // - Do NOT include markdown, code fences, comments, or any extra formatting.
-// // - The format must be a raw JSON object.
-
-// // Repeat: Do not wrap your output in markdown or code fences.`,
-// //   });
-
-// //   const response =
-// //     await supportAgent.run(`You are a ticket triage agent. Only return a strict JSON object with no extra text, headers, or markdown.
-        
-// // Analyze the following support ticket and provide a JSON object with:
-
-// // - summary: A short 1-2 sentence summary of the issue.
-// // - priority: One of "low", "medium", or "high".
-// // - helpfulNotes: A detailed technical explanation that a moderator can use to solve this issue. Include useful external links or resources if possible.
-// // - relatedSkills: An array of relevant skills required to solve the issue (e.g., ["React", "MongoDB"]).
-
-// // Respond ONLY in this JSON format and do not include any other text or markdown in the answer:
-
-// // {
-// // "summary": "Short summary of the ticket",
-// // "priority": "high",
-// // "helpfulNotes": "Here are useful tips...",
-// // "relatedSkills": ["React", "Node.js"]
-// // }
-
-// // ---
-
-// // Ticket information:
-
-// // - Title: ${ticket.title}
-// // - Description: ${ticket.description}`);
-
-//   // Support several possible response shapes from the agent and guard
-//   // against undefined before calling string methods like `match`.
-//   let raw =
-//     (response && response.output && response.output[0] && response.output[0].context) ||
-//     response?.outputText ||
-//     response?.text ||
-//     (typeof response === "string" ? response : null);
-
-//   if (typeof raw === "object") {
-//     try {
-//       raw = JSON.stringify(raw);
-//     } catch (e) {
-//       raw = String(raw);
-//     }
-//   }
-
-//   if (!raw) {
-//     console.log("AI response is empty or in an unexpected shape:", response);
-//     return null;
-//   }
-
-//   // try {
-//   //   const fenceMatch = raw.match(/```json\s*([\s\S]*?)\s*```/i);
-//   //   const jsonString = fenceMatch ? fenceMatch[1] : raw.trim();
-//   //   return JSON.parse(jsonString);
-//   // } catch (e) {
-//   //   console.log("Failed to parse JSON from AI response:", e && e.message ? e.message : e);
-//   //   console.log("Full AI response:", raw);
-//   //   return null;
-//   // }
-
-//   // --- REPLACE the entire block below this line ---
-// let rawText = response?.outputText || response?.text || null;
-
-// // Fallback: Check the 'output' array for the content, which is common
-// // in AgentResult wrappers like the one you are using.
-// if (!rawText && response?.output?.length > 0 && response.output[0]?.content) {
-//     rawText = response.output[0].content;
-// }
-
-// if (!rawText) {
-//     console.error("AI response is empty or in an unexpected shape:", response);
-//     return null;
-// }
-
-// try {
-//     // Attempt 1: Check for markdown JSON fences (```json ... ```)
-//     // This regex safely extracts the content between the fences.
-//     const fenceMatch = rawText.match(/```json\s*([\s\S]*?)\s*```/i);
-    
-//     let jsonString;
-
-//     if (fenceMatch && fenceMatch[1]) {
-//         console.log("Successfully extracted JSON from markdown fence.");
-//         jsonString = fenceMatch[1].trim();
-//     } else {
-//         // Attempt 2: If no fence, assume it's raw JSON
-//         jsonString = rawText.trim();
-//     }
-    
-//     return JSON.parse(jsonString);
-      
-//     } catch (e) {
-//       console.log("Final JSON parsing failed:", e.message);
-//       console.log("Full AI response (problematic):", rawJsonString);
-//       return null;
-//     }
-// //   }
-// };
-
-
-// export default analyzeTicket;
-
-
-import { createAgent, gemini } from "@inngest/agent-kit";
-
-const analyzeTicket = async (ticket) => {
-
-  const allowedSkills = [
-        "Troubleshooting", "API Debugging", "Hardware Diagnosis", "System Administration", 
-        "Network Configuration", "Cloud Services (e.g., AWS/Azure)", "Security Operations", 
-        "Software Development (Specific Language)", "Database Management", "Incident Management", 
-        "System Monitoring", "Root Cause Analysis", "Payment Processing", "Invoicing", 
-        "Accounting Software", "Compliance (e.g., PCI)", "Product Knowledge", 
-        "CRM Management", "Needs Assessment", "Proposal Writing", "Logistics Management", 
-        "Refund Processing", "Inventory Tracking", "HR Policy Knowledge", "Legal Compliance", 
-        "Confidentiality", "Customer Service", "Technical Writing", "Documentation", 
-        "Content Knowledge"
-    ];
-    
-    const skillsListString = allowedSkills.map(s => `"${s}"`).join(", ");
-
-    const systemPrompt = `You are an expert AI assistant that processes technical support tickets. 
-
-Your job is to:
-1. Summarize the issue.
-2. Estimate its priority.
-3. Provide helpful notes and resource links for human moderators.
-4. List relevant technical skills required.
-
-**CRITICAL CONSTRAINT: The 'relatedSkills' array MUST ONLY contain skills from the following predefined list. If a ticket requires a skill not on this list, select the closest general skill (e.g., use "Troubleshooting" instead of "specific_brand_fix"): [${skillsListString}].**
-
-IMPORTANT:
-- Respond with *only* valid raw JSON.
-- Do NOT include markdown, code fences, comments, or any extra formatting.
-- The format must be a raw JSON object.
-
-Repeat: Do not wrap your output in markdown or code fences.`;
-
-    const supportAgent = createAgent({
-        model: gemini({
-            model: "gemini-2.5-pro",
-            apiKey: process.env.GEMINI_API_KEY,
-        }),
-        name: "AI Ticket Triage Assistant",
-        system: systemPrompt,
-    });
-
-    const response =
-        await supportAgent.run(`You are a ticket triage agent. Only return a strict JSON object with no extra text, headers, or markdown.
-        
-Analyze the following support ticket and provide a JSON object with:
-
-- summary: A short 1-2 sentence summary of the issue.
-- priority: One of "low", "medium", or "high".
-- helpfulNotes: A detailed technical explanation that a moderator can use to solve this issue. Include useful external links or resources if possible.
-- relatedSkills: An array of relevant skills required to solve the issue. **CRITICAL: The skills must be chosen exclusively from the predefined list of allowed skills.**
-
-Respond ONLY in this JSON format and do not include any other text or markdown in the answer:
-
-{
-"summary": "Short summary of the ticket",
-"priority": "high",
-"helpfulNotes": "Here are useful tips...",
-"relatedSkills": ["Troubleshooting", "System Administration"] // e.g., only from the allowed list
+async function getClassifier() {
+  if (!_classifier) {
+    console.log("Loading NLI classifier (first load ~15s)...");
+    _classifier = await pipeline(
+      "zero-shot-classification",
+      "Xenova/nli-MiniLM-L2-mnli"
+    );
+    console.log("Classifier ready");
+  }
+  return _classifier;
 }
 
----
-
-Ticket information:
-
-- Title: ${ticket.title}
-- Description: ${ticket.description}`);
-
-
-// --- START OF FIXED EXTRACTION AND PARSING LOGIC ---
-
-let rawText = response?.outputText || response?.text || null;
-
-// Fallback: Check the 'output' array for the content
-if (!rawText && response?.output?.length > 0 && response.output[0]?.content) {
-    rawText = response.output[0].content;
+export async function getEmbedder() {
+  if (!_embedder) {
+    console.log("Loading embedding model (first load ~10s)...");
+    _embedder = await pipeline(
+      "feature-extraction",
+      "Xenova/all-MiniLM-L6-v2"
+    );
+    console.log("Embedder ready");
+  }
+  return _embedder;
 }
 
-if (!rawText) {
-    console.error("AI response is empty or in an unexpected shape:", response);
-    return null;
+async function getPriorityModel() {
+  if (_priorityDisabled) {
+    throw new Error("Priority ONNX model unavailable");
+  }
+
+  if (!fs.existsSync(PRIORITY_MODEL_PATH)) {
+    _priorityDisabled = true;
+    throw new Error(
+      `Priority model not found at ${PRIORITY_MODEL_PATH} — using rule-engine fallback`
+    );
+  }
+
+  if (!_prioritySession) {
+    try {
+      _ort = await import("onnxruntime-node");
+      console.log("Loading DistilBERT priority model...");
+      _prioritySession = await _ort.InferenceSession.create(PRIORITY_MODEL_PATH);
+      _priorityTokenizer = await AutoTokenizer.from_pretrained(PRIORITY_MODEL_DIR);
+      console.log("Priority model ready");
+    } catch (err) {
+      _priorityDisabled = true;
+      _prioritySession = null;
+      _priorityTokenizer = null;
+      _ort = null;
+      throw err;
+    }
+  }
+
+  return { session: _prioritySession, tokenizer: _priorityTokenizer, ort: _ort };
 }
 
-try {
-    // Attempt 1: Check for markdown JSON fences (```json ... ```)
-    const fenceMatch = rawText.match(/```json\s*([\s\S]*?)\s*```/i);
-    
-    let jsonString;
-
-    if (fenceMatch && fenceMatch[1]) {
-        console.log("Successfully extracted JSON from markdown fence.");
-        jsonString = fenceMatch[1].trim();
-    } else {
-        // Attempt 2: If no fence, assume it's raw JSON
-        jsonString = rawText.trim();
-    }
-    
-    return JSON.parse(jsonString);
-    
-} catch (e) {
-    console.error("Final JSON parsing failed:", e.message);
-    // Corrected variable name: rawText
-    console.error("Full AI response (problematic):", rawText);
-    return null;
+function fallbackPriority(title, description) {
+  const text = (title + " " + description).toLowerCase();
+  if (
+    ["offline", "down", "outage", "blocked", "cannot access", "urgent", "critical", "locked out", "disruption"].some(
+      (w) => text.includes(w)
+    )
+  ) {
+    return "high";
+  }
+  if (
+    ["query", "question", "information", "interested", "how to", "inquiry", "wondering"].some(
+      (w) => text.includes(w)
+    )
+  ) {
+    return "low";
+  }
+  return "medium";
 }
+
+async function scorePriority(title, description) {
+  try {
+    const { session, tokenizer, ort } = await getPriorityModel();
+    const text = `${title} ${description}`.substring(0, 512);
+
+    const encoded = await tokenizer(text, {
+      truncation: true,
+      max_length: 128,
+      padding: "max_length",
+      return_tensors: "np",
+    });
+
+    const inputIds = encoded.input_ids.data;
+    const attentionMask = encoded.attention_mask.data;
+    const seqLen = encoded.input_ids.dims[1];
+
+    const feeds = {
+      input_ids: new ort.Tensor(
+        "int64",
+        BigInt64Array.from(Array.from(inputIds).map(BigInt)),
+        [1, seqLen]
+      ),
+      attention_mask: new ort.Tensor(
+        "int64",
+        BigInt64Array.from(Array.from(attentionMask).map(BigInt)),
+        [1, seqLen]
+      ),
+    };
+
+    const output = await session.run(feeds);
+    const logits = Array.from(output.logits.data);
+
+    const maxLogit = Math.max(...logits);
+    const expLogits = logits.map((l) => Math.exp(l - maxLogit));
+    const sumExp = expLogits.reduce((a, b) => a + b, 0);
+    const probs = expLogits.map((e) => e / sumExp);
+
+    const predictedIdx = probs.indexOf(Math.max(...probs));
+    const priority = PRIORITY_LABELS[predictedIdx];
+    const confidence = (probs[predictedIdx] * 100).toFixed(1);
+
+    console.log(`Priority: ${priority} (${confidence}% confidence)`);
+    return priority;
+  } catch (err) {
+    if (!_priorityDisabled) {
+      console.error("DistilBERT priority failed, using fallback:", err.message);
+    }
+    return fallbackPriority(title, description);
+  }
+}
+
+export async function embedText(text) {
+  const embedder = await getEmbedder();
+  const output = await embedder(text, { pooling: "mean", normalize: true });
+  return Array.from(output.data);
+}
+
+const classifyTicket = async (ticket) => {
+  try {
+    const clf = await getClassifier();
+    const text = `${ticket.title} ${ticket.description}`;
+
+    const [typeResult, deptResult, priority] = await Promise.all([
+      clf(text, TICKET_TYPES, { multi_label: false }),
+      clf(text, DEPARTMENTS, { multi_label: false }),
+      scorePriority(ticket.title, ticket.description),
+    ]);
+
+    const ticketType = typeResult.labels[0];
+    const department = deptResult.labels[0];
+
+    console.log(
+      `Classified: Type=${ticketType}, Dept=${department}, Priority=${priority}`
+    );
+    return { ticketType, department, priority };
+  } catch (err) {
+    console.error("classifyTicket failed:", err.message);
+    return { ticketType: "Request", department: null, priority: "medium" };
+  }
 };
 
-export default analyzeTicket;
+export default classifyTicket;

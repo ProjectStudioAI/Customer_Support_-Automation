@@ -10,23 +10,20 @@ export default function VerifyEmailPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get email from location state or localStorage
   const email = location.state?.email || localStorage.getItem("signupEmail");
 
   if (!email) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-base-200">
-        <div className="card w-full max-w-sm shadow-xl bg-base-100">
-          <div className="card-body">
-            <h2 className="card-title justify-center">Email Verification</h2>
-            <p className="text-error">No email found. Please sign up first.</p>
-            <button
-              onClick={() => navigate("/signup")}
-              className="btn btn-primary mt-4"
-            >
-              Go to Sign Up
-            </button>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-sm p-8 text-center">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Email Verification</h1>
+          <p className="text-sm text-red-600 mb-4">No email found. Please sign up first.</p>
+          <button
+            onClick={() => navigate("/signup")}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
+          >
+            Go to Sign Up
+          </button>
         </div>
       </div>
     );
@@ -53,7 +50,7 @@ export default function VerifyEmailPage() {
       const data = await res.json();
 
       if (res.ok) {
-        setSuccess("✓ Email verified successfully! Redirecting to login...");
+        setSuccess("Email verified successfully! Redirecting to login...");
         setTimeout(() => {
           localStorage.removeItem("signupEmail");
           navigate("/login");
@@ -89,7 +86,7 @@ export default function VerifyEmailPage() {
       const data = await res.json();
 
       if (res.ok) {
-        setSuccess("✓ OTP sent successfully! Check your email.");
+        setSuccess("OTP sent successfully! Check your email.");
         setOtp("");
       } else {
         setError(data.error || "Failed to resend OTP");
@@ -103,32 +100,37 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200">
-      <div className="card w-full max-w-sm shadow-xl bg-base-100">
-        <form onSubmit={handleVerify} className="card-body">
-          <h2 className="card-title justify-center">Verify Email</h2>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
+        <h1 className="text-2xl font-semibold text-gray-900 text-center mb-1">
+          Verify Email
+        </h1>
+        <p className="text-sm text-gray-500 text-center mb-6">
+          Enter the code sent to your email
+        </p>
 
-          <div className="bg-base-200 p-3 rounded text-sm text-center mb-4">
-            <p>Verification code sent to:</p>
-            <p className="font-semibold">{email}</p>
-          </div>
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-center mb-4">
+          <p className="text-gray-500">Verification code sent to:</p>
+          <p className="font-medium text-gray-900">{email}</p>
+        </div>
 
+        <form onSubmit={handleVerify}>
           {error && (
-            <div className="alert alert-error">
-              <span>{error}</span>
+            <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-700">
+              {error}
             </div>
           )}
 
           {success && (
-            <div className="alert alert-success">
-              <span>{success}</span>
+            <div className="mb-4 p-3 rounded-lg text-sm bg-green-50 border border-green-200 text-green-700">
+              {success}
             </div>
           )}
 
           <input
             type="text"
             placeholder="Enter 6-digit OTP"
-            className="input input-bordered"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm mb-4 text-center tracking-widest"
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
             maxLength="6"
@@ -136,22 +138,27 @@ export default function VerifyEmailPage() {
             disabled={loading || !!success}
           />
 
-          <div className="form-control mt-4">
-            <button
-              type="submit"
-              className="btn btn-primary w-full"
-              disabled={loading || !otp || !!success}
-            >
-              {loading ? "Verifying..." : "Verify OTP"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors text-sm disabled:opacity-50"
+            disabled={loading || !otp || !!success}
+          >
+            {loading ? "Verifying..." : "Verify OTP"}
+          </button>
 
-          <div className="divider">or</div>
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white px-2 text-gray-400">or</span>
+            </div>
+          </div>
 
           <button
             type="button"
             onClick={handleResendOtp}
-            className="btn btn-ghost btn-sm w-full"
+            className="w-full text-sm text-gray-600 hover:text-indigo-600 transition-colors disabled:opacity-50"
             disabled={resendLoading || loading}
           >
             {resendLoading ? "Sending..." : "Resend OTP"}
@@ -160,7 +167,7 @@ export default function VerifyEmailPage() {
           <button
             type="button"
             onClick={() => navigate("/login")}
-            className="btn btn-link btn-sm w-full mt-2"
+            className="w-full mt-3 text-sm text-indigo-600 hover:underline"
           >
             Back to Login
           </button>
