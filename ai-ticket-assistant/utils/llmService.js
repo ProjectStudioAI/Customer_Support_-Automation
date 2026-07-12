@@ -8,6 +8,9 @@ function buildPrompt(userQuery, retrievedContext, similarityScore) {
       : `No strong matching past tickets were found. Answer using general customer support best practices. Be honest that this may need human review if you are not confident.`;
 
   return `You are a professional, concise customer support assistant. Respond helpfully in 2-4 sentences unless more detail is clearly needed.
+Return only a plain customer-facing reply. Do not use headers, labels, bullet points, or markdown.
+Reference specific details from the customer's message (the exact problem they described) rather than generic acknowledgments. Do not use boilerplate phrases like 'we are looking into the matter' or 'thank you for reaching out' as the entire response — say something concrete about their specific issue.
+Match the customer's tone — if they sound urgent or frustrated, acknowledge that directly; if they sound casual, respond casually. Do not default to overly formal corporate language.
 
 ${groundingNote}
 
@@ -28,7 +31,7 @@ export async function generateResponse(userQuery, retrievedContext, similaritySc
         prompt,
         stream: false,
         options: {
-          temperature: 0.3,
+          temperature: 0.55,
           num_predict: 300,
           top_p: 0.9,
         },

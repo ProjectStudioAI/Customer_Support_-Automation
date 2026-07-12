@@ -5,7 +5,7 @@ import { NonRetriableError } from "inngest";
 import { sendMail } from "../../utils/mailer.js";
 import classifyTicket from "../../utils/ai.js";
 import { findSimilarTickets, ensureCollection } from "../../utils/rag.js";
-import { handleTicketQuery } from "../../utils/ragPipeline.js";
+import { generateResponse } from "../../utils/llmService.js";
 export const onTicketCreated = inngest.createFunction(
   { id: "on-ticket-created", 
     retries: 2,
@@ -46,20 +46,63 @@ export const onTicketCreated = inngest.createFunction(
         try {
           await ensureCollection();
           const text = `${ticket.title} ${ticket.description}`;
-          const [classification, ragResult, similarTickets] = await Promise.all([
+          const [classification, similarTickets] = await Promise.all([
             classifyTicket(ticket),
-            handleTicketQuery(text),
             findSimilarTickets(text, 3),
           ]);
-          const isDuplicate = similarTickets.all.some((t) => t.isDuplicate);
-          if (isDuplicate) console.log(`Possible duplicate detected: ${ticketId}`);
+          const topMatch = similarTickets.all[0] || null;
+          const topMatchScore = topMatch?.score ?? null;
+          let tier = "cold";
+          let helpfulNotes = null;
+          let aiDraftResponse = null;
+          let llmCalled = false;
+          let llmLatencyMs = null;
+          let llmFailed = false;
+
+          if (topMatch && topMatch.score >= 0.92) {
+            tier = "duplicate";
+            helpfulNotes = topMatch.response || null;
+            if (helpfulNotes) console.log(`Possible duplicate detected: ${ticketId}`);
+          } else {
+            tier = topMatch && topMatch.score >= 0.5 ? "augmented" : "cold";
+            llmCalled = true;
+            const startedAt = Date.now();
+            try {
+              const llmResponse = await generateResponse(
+                text,
+                tier === "augmented" ? topMatch.response : null,
+                tier === "augmented" ? topMatch.score : 0
+              );
+              llmLatencyMs = Date.now() - startedAt;
+              if (llmResponse) {
+                aiDraftResponse = llmResponse;
+              } else {
+                llmFailed = true;
+              }
+            } catch (error) {
+              llmLatencyMs = Date.now() - startedAt;
+              llmFailed = true;
+              console.error("generateResponse failed:", error.message);
+            }
+          }
+
           return {
             ...classification,
             similarTickets: similarTickets.all,
             humanSimilarTickets: similarTickets.humanResolved,
-            generatedResponse: ragResult?.response || null,
-            needsHumanReview: ragResult?.needsHumanReview || false,
-            isDuplicate,
+            generatedResponse: aiDraftResponse,
+            aiDraftResponse,
+            duplicateResponse: topMatch?.response || null,
+            helpfulNotes,
+            aiMetrics: {
+              topMatchScore,
+              tier,
+              llmCalled,
+              llmLatencyMs,
+              llmFailed,
+            },
+            needsHumanReview: tier !== "duplicate" && !aiDraftResponse,
+            isDuplicate: tier === "duplicate",
           };
         } catch (err) {
           console.error("ai-classify failed:", err.message);
@@ -70,6 +113,15 @@ export const onTicketCreated = inngest.createFunction(
             similarTickets: [],
             humanSimilarTickets: [],
             generatedResponse: null,
+            aiDraftResponse: null,
+            helpfulNotes: null,
+            aiMetrics: {
+              topMatchScore: null,
+              tier: "cold",
+              llmCalled: true,
+              llmLatencyMs: null,
+              llmFailed: true,
+            },
             needsHumanReview: true,
             isDuplicate: false,
           };
@@ -81,13 +133,7 @@ export const onTicketCreated = inngest.createFunction(
       // 4. UPDATE TICKET STATUS AND DATA FROM AI
       const department = await step.run("update-ticket-data", async () => {
         try {
-          const helpfulNotes = (aiResult.humanSimilarTickets || [])
-            .filter((t) => t.response && t.response.trim().length > 0 && t.score >= 0.7)
-            .slice(0, 2)
-            .map((t, i) => `Note ${i + 1} (${Math.round(t.score * 100)}% similar):\n${t.response}`)
-            .join("\n\n");
-
-          const ticketHelpfulNotes = helpfulNotes.length > 0 ? helpfulNotes : null;
+          const ticketHelpfulNotes = aiResult.aiMetrics?.tier === "duplicate" ? aiResult.helpfulNotes : null;
 
           const updatedTicket = await Ticket.findByIdAndUpdate(
             ticketId,
@@ -98,6 +144,8 @@ export const onTicketCreated = inngest.createFunction(
               priority: aiResult.priority,
               helpfulNotes: ticketHelpfulNotes,
               generatedResponse: aiResult.generatedResponse,
+              aiDraftResponse: aiResult.aiDraftResponse,
+              aiMetrics: aiResult.aiMetrics,
             },
             { new: true, runValidators: true }
           );
@@ -116,10 +164,19 @@ export const onTicketCreated = inngest.createFunction(
         if (!ticketCreator) return;
 
         try {
-          const responseSection = aiResult?.generatedResponse
+          const tier = aiResult?.aiMetrics?.tier;
+          const llmFailed = aiResult?.aiMetrics?.llmFailed;
+          const responseContent =
+            tier === "duplicate"
+              ? aiResult?.duplicateResponse || aiResult?.helpfulNotes
+              : tier === "augmented"
+                ? aiResult?.aiDraftResponse
+                : null;
+
+          const responseSection = responseContent && tier !== "cold" && !llmFailed
             ? `<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px;margin:16px 0;">
-                <strong style="color:#0369a1">Our initial response:</strong>
-                <p style="color:#374151;margin-top:8px;">${aiResult.generatedResponse}</p>
+                <strong style="color:#0369a1">Here's some initial guidance:</strong>
+                <p style="color:#374151;margin-top:8px;">${responseContent}</p>
               </div>`
             : `<p style="color:#6b7280">Our team is reviewing your ticket and will update you shortly.</p>`;
 

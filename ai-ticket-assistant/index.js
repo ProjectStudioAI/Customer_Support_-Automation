@@ -1,5 +1,4 @@
 import "dotenv/config";
-
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -62,7 +61,7 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB connected ✅");
-    app.listen(PORT, () => console.log(`🚀 Server at http://localhost:${PORT}`));
+    app.listen(PORT, () => console.log(` Server at http://localhost:${PORT}`));
     checkOllamaHealth().then((healthy) => {
       if (healthy) {
         console.log("Ollama local LLM server is reachable");
@@ -71,4 +70,4 @@ mongoose
       }
     });
   })
-  .catch((err) => console.error("❌ MongoDB error:", err.message));
+  .catch((err) => console.error(" MongoDB error:", err.message));

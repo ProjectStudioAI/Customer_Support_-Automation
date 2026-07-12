@@ -8,6 +8,15 @@ export default function Tickets() {
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem("token");
+  let user = localStorage.getItem("user");
+  if (user) {
+    try {
+      user = JSON.parse(user);
+    } catch {
+      user = null;
+    }
+  }
+  const role = user?.role;
   const fetchTickets = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/tickets`, {
@@ -74,34 +83,38 @@ export default function Tickets() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">Create a Support Ticket</h2>
+      {role === "user" && (
+        <>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Create a Support Ticket</h2>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4 mb-10">
-        <input
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          placeholder="Brief title of your issue"
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-          required
-        />
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Describe your issue in detail..."
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm resize-none"
-          rows={4}
-          required
-        />
-        <button
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-150 text-sm disabled:opacity-50"
-          type="submit"
-          disabled={loading}
-        >
-          {loading ? "Submitting..." : "Submit Ticket"}
-        </button>
-      </form>
+          <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4 mb-10">
+            <input
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              placeholder="Brief title of your issue"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+              required
+            />
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Describe your issue in detail..."
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm resize-none"
+              rows={4}
+              required
+            />
+            <button
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-150 text-sm disabled:opacity-50"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Submitting..." : "Submit Ticket"}
+            </button>
+          </form>
+        </>
+      )}
 
       <h2 className="text-lg font-semibold text-gray-900 mb-3">Your Tickets</h2>
       <div className="space-y-3">
