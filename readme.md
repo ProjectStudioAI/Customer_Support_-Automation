@@ -40,35 +40,7 @@ historical match.
 
 ## Architecture Overview
 
-```
-Customer submits ticket
-        │
-        ▼
-Express API (controllers/ticket.js) — saves ticket, returns immediately
-        │
-        ▼
-Inngest event: "ticket/created"  ──────────────────────────────────────┐
-        │                                                              │
-        ▼                                                              │
-Background pipeline (inngest/functions/on-ticket-create.js):           │
-  1. Classify (zero-shot NLI + fine-tuned RoBERTa priority model)      │
-  2. Search Qdrant for similar past resolutions                        │
-  3. Tier decision: duplicate / augmented / cold                       │
-  4. Conditionally call local LLM (Ollama)                             │
-  5. Save results, email customer, assign moderator, notify moderator/admin
-        │
-        ▼
-Moderator resolves ticket ──▶ Inngest event: "ticket/resolved"
-        │
-        ▼
-storeResolvedTicket() — embeds problem text, upserts resolution into Qdrant
-        │
-        ▼
-Available for retrieval on the NEXT similar ticket ─────────────────────┘
-
-Nightly cron (sync-resolved-tickets.js) — backfills any resolved ticket that
-failed to reach Qdrant in real time.
-```
+![Architecture Overview](./diagrams/00-overall-architecture-flow.svg)
 
 Full processing is decoupled from the HTTP request/response cycle — ticket creation returns
 in milliseconds; classification, retrieval, and generation happen asynchronously via Inngest.
