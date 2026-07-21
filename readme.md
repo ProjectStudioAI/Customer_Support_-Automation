@@ -5,20 +5,14 @@ classification, a fine-tuned priority model, semantic retrieval over past resolu
 (Qdrant), and confidence-gated local LLM generation (Ollama) for tickets with no strong
 historical match.
 
-> This README documents only what is implemented in the current codebase. The
-> [Known Limitations](#known-limitations) section is an honest, deliberate call-out list —
-> not bugs hidden from the reader.
-
 ---
 
 ## Live Demo
 
-**Deployed app:** <!-- ADD DEPLOYED LINK HERE -->
+**Deployed app:** 
 
 > **Note:** The free-tier hosting credits used for the AI model deployment (Ollama) have
-> expired. Ticket creation, authentication, classification, and retrieval still run normally
-> on the live demo, but LLM-generated draft responses may be unavailable or degraded until
-> the model host is reprovisioned. Run the project locally (see [Setup](#setup)) to exercise
+> expired. Run the project locally (see [Setup](#setup)) to exercise
 > the full pipeline including generation.
 
 ---
