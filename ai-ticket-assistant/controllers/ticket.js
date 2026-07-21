@@ -1,5 +1,6 @@
 import { inngest } from "../inngest/client.js";
 import Ticket from "../models/ticket.js";
+import User from "../models/user.js";
 import mongoose from "mongoose";
 
 export const createTicket = async (req, res) => {
@@ -51,7 +52,12 @@ export const getTickets = async (req, res) => {
         .populate("assignedTo", ["email", "_id"])
         .sort({ createdAt: -1 });
     } else if (user.role === "moderator") {
-      tickets = await Ticket.find({ assignedTo: user._id })
+      tickets = await Ticket.find({
+        $or: [
+          { assignedTo: user._id },
+          { assignedTo: null, department: user.department },
+        ],
+      })
         .select("title description status createdAt priority assignedTo ticketType department helpfulNotes generatedResponse resolutionNote resolvedAt")
         .populate("assignedTo", ["email", "_id"])
         .sort({ createdAt: -1 });
@@ -101,7 +107,7 @@ export const getTicket = async (req, res) => {
     } else if (user.role === "moderator") {
       ticket = await Ticket.findOne({
         _id: id,
-        assignedTo: user._id,
+        $or: [{ assignedTo: user._id }, { assignedTo: null, department: user.department }],
       })
         .select("title description status createdAt priority assignedTo ticketType department helpfulNotes generatedResponse resolutionNote resolvedAt createdBy")
         .populate("assignedTo", ["email", "_id"])
@@ -174,6 +180,83 @@ export const resolveTicket = async (req, res) => {
     return res.status(200).json({ message: "Ticket resolved successfully", ticket });
   } catch (error) {
     console.error("Error resolving ticket:", error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const assignTicket = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { moderatorId } = req.body;
+    const user = req.user;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid ticket id" });
+    }
+
+    const ticket = await Ticket.findById(id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    if (user.role === "user") {
+      return res.status(403).json({ message: "Not authorized to assign tickets" });
+    }
+
+    if (user.role === "moderator") {
+      if (ticket.assignedTo) {
+        return res.status(400).json({ message: "This ticket is already assigned" });
+      }
+
+      const updatedTicket = await Ticket.findByIdAndUpdate(
+        id,
+        { assignedTo: user._id },
+        { new: true }
+      ).populate("assignedTo", ["email", "_id"]);
+
+      await User.updateOne({ _id: user._id }, { $inc: { ticketsAssignedCount: 1 } });
+
+      return res.status(200).json({ message: "Ticket assigned successfully", ticket: updatedTicket });
+    }
+
+    if (user.role === "admin") {
+      if (!moderatorId) {
+        return res.status(400).json({ message: "moderatorId is required" });
+      }
+      if (!mongoose.isValidObjectId(moderatorId)) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const assignee = await User.findById(moderatorId).select("role");
+      if (!assignee) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      if (!["moderator", "admin"].includes(assignee.role)) {
+        return res.status(400).json({ message: "User is not assignable" });
+      }
+
+      const previousAssigneeId = ticket.assignedTo ? ticket.assignedTo.toString() : null;
+      const nextAssigneeId = moderatorId.toString();
+
+      if (previousAssigneeId && previousAssigneeId !== nextAssigneeId) {
+        await User.updateOne({ _id: previousAssigneeId }, { $inc: { ticketsAssignedCount: -1 } });
+        await User.updateOne({ _id: nextAssigneeId }, { $inc: { ticketsAssignedCount: 1 } });
+      } else if (!previousAssigneeId) {
+        await User.updateOne({ _id: nextAssigneeId }, { $inc: { ticketsAssignedCount: 1 } });
+      }
+
+      const updatedTicket = await Ticket.findByIdAndUpdate(
+        id,
+        { assignedTo: moderatorId },
+        { new: true }
+      ).populate("assignedTo", ["email", "_id"]);
+
+      return res.status(200).json({ message: "Ticket assigned successfully", ticket: updatedTicket });
+    }
+
+    return res.status(403).json({ message: "Not authorized to assign tickets" });
+  } catch (error) {
+    console.error("Error assigning ticket:", error.message);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };

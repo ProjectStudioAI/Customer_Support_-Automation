@@ -6,6 +6,9 @@ export default function Tickets() {
   const [form, setForm] = useState({ title: "", description: "" });
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [moderators, setModerators] = useState([]);
+  const [assignmentDrafts, setAssignmentDrafts] = useState({});
+  const [actionLoadingId, setActionLoadingId] = useState(null);
 
   const token = localStorage.getItem("token");
   let user = localStorage.getItem("user");
@@ -17,6 +20,21 @@ export default function Tickets() {
     }
   }
   const role = user?.role;
+
+  const fetchModerators = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && Array.isArray(data)) {
+        setModerators(data.filter((item) => item.role === "moderator"));
+      }
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    }
+  };
+
   const fetchTickets = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/tickets`, {
@@ -48,6 +66,20 @@ export default function Tickets() {
     fetchTickets();
   }, []);
 
+  useEffect(() => {
+    if (role === "admin") {
+      fetchModerators();
+    }
+  }, [role]);
+
+  useEffect(() => {
+    const nextDrafts = {};
+    tickets.forEach((ticket) => {
+      nextDrafts[ticket._id] = ticket.assignedTo?._id || "";
+    });
+    setAssignmentDrafts(nextDrafts);
+  }, [tickets]);
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -78,6 +110,46 @@ export default function Tickets() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleClaim = async (ticketId) => {
+    setActionLoadingId(ticketId);
+    try {
+      const res = await fetch(`${API_BASE}/api/tickets/${ticketId}/assign`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+      if (res.ok) {
+        fetchTickets();
+      }
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleAssign = async (ticketId) => {
+    const moderatorId = assignmentDrafts[ticketId];
+    if (!moderatorId) return;
+    setActionLoadingId(ticketId);
+    try {
+      const res = await fetch(`${API_BASE}/api/tickets/${ticketId}/assign`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ moderatorId }),
+      });
+      if (res.ok) {
+        fetchTickets();
+      }
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
@@ -119,17 +191,57 @@ export default function Tickets() {
       <h2 className="text-lg font-semibold text-gray-900 mb-3">Your Tickets</h2>
       <div className="space-y-3">
         {tickets.map((ticket) => (
-          <Link
+          <div
             key={ticket._id}
-            className="block bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md hover:border-indigo-200 transition-all duration-150"
-            to={`/tickets/${ticket._id}`}
+            className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md hover:border-indigo-200 transition-all duration-150"
           >
-            <h3 className="font-semibold text-gray-900 text-base">{ticket.title}</h3>
-            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{ticket.description}</p>
-            <p className="text-xs text-gray-400 mt-2">
-              {new Date(ticket.createdAt).toLocaleString()}
-            </p>
-          </Link>
+            <Link to={`/tickets/${ticket._id}`} className="block">
+              <h3 className="font-semibold text-gray-900 text-base">{ticket.title}</h3>
+              <p className="text-sm text-gray-500 mt-1 line-clamp-2">{ticket.description}</p>
+              <p className="text-xs text-gray-400 mt-2">
+                {new Date(ticket.createdAt).toLocaleString()}
+              </p>
+            </Link>
+
+            {role === "moderator" && !ticket.assignedTo && (
+              <button
+                type="button"
+                onClick={() => handleClaim(ticket._id)}
+                disabled={actionLoadingId === ticket._id}
+                className="mt-3 inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800"
+              >
+                ⚠️ Unassigned — {actionLoadingId === ticket._id ? "Claiming..." : "Claim this ticket"}
+              </button>
+            )}
+
+            {role === "admin" && (
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                  {ticket.assignedTo?.email || "Unassigned"}
+                </span>
+                <select
+                  className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+                  value={assignmentDrafts[ticket._id] || ""}
+                  onChange={(e) => setAssignmentDrafts({ ...assignmentDrafts, [ticket._id]: e.target.value })}
+                >
+                  <option value="">Select moderator</option>
+                  {moderators.map((moderator) => (
+                    <option key={moderator._id} value={moderator._id}>
+                      {moderator.email}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => handleAssign(ticket._id)}
+                  disabled={actionLoadingId === ticket._id || !assignmentDrafts[ticket._id]}
+                  className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  {actionLoadingId === ticket._id ? "Assigning..." : "Assign"}
+                </button>
+              </div>
+            )}
+          </div>
         ))}
         {tickets.length === 0 && (
           <p className="text-gray-400 text-sm text-center py-8">No tickets submitted yet.</p>

@@ -61,16 +61,23 @@ export const onTicketCreated = inngest.createFunction(
 
           if (topMatch && topMatch.score >= 0.92) {
             tier = "duplicate";
-            helpfulNotes = topMatch.response || null;
+            helpfulNotes = topMatch.fromHuman ? (topMatch.response || null) : null;
             if (helpfulNotes) console.log(`Possible duplicate detected: ${ticketId}`);
           } else {
             tier = topMatch && topMatch.score >= 0.5 ? "augmented" : "cold";
             llmCalled = true;
             const startedAt = Date.now();
             try {
+              const context =
+                tier === "augmented"
+                  ? similarTickets.all
+                      .filter((r) => r.score >= 0.6)
+                      .map((r) => `Past query: ${r.title}\nResolution: ${r.response}`)
+                      .join("\n\n")
+                  : null;
               const llmResponse = await generateResponse(
                 text,
-                tier === "augmented" ? topMatch.response : null,
+                context,
                 tier === "augmented" ? topMatch.score : 0
               );
               llmLatencyMs = Date.now() - startedAt;
@@ -101,7 +108,6 @@ export const onTicketCreated = inngest.createFunction(
               llmLatencyMs,
               llmFailed,
             },
-            needsHumanReview: tier !== "duplicate" && !aiDraftResponse,
             isDuplicate: tier === "duplicate",
           };
         } catch (err) {
@@ -122,7 +128,6 @@ export const onTicketCreated = inngest.createFunction(
               llmLatencyMs: null,
               llmFailed: true,
             },
-            needsHumanReview: true,
             isDuplicate: false,
           };
         }
@@ -168,7 +173,7 @@ export const onTicketCreated = inngest.createFunction(
           const llmFailed = aiResult?.aiMetrics?.llmFailed;
           const responseContent =
             tier === "duplicate"
-              ? aiResult?.duplicateResponse || aiResult?.helpfulNotes
+              ? aiResult?.duplicateResponse 
               : tier === "augmented"
                 ? aiResult?.aiDraftResponse
                 : null;

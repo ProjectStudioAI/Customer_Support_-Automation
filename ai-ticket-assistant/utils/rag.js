@@ -16,7 +16,6 @@ const client = new QdrantClient({
   checkCompatibility: false,
 });
 
-
 export async function ensureCollection() {
   try {
     await client.getCollection(COLLECTION);

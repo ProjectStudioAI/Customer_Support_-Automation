@@ -8,6 +8,9 @@ export default function TicketDetailsPage() {
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [moderators, setModerators] = useState([]);
+  const [assignmentDraft, setAssignmentDraft] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -21,6 +24,25 @@ export default function TicketDetailsPage() {
       setUser(null);
     }
   }, [token]);
+
+  useEffect(() => {
+    const fetchModerators = async () => {
+      if (user?.role !== "admin") return;
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json().catch(() => null);
+        if (res.ok && Array.isArray(data)) {
+          setModerators(data.filter((item) => item.role === "moderator"));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchModerators();
+  }, [user, token]);
 
   const fetchTicket = async () => {
     setLoading(true);
@@ -47,6 +69,49 @@ export default function TicketDetailsPage() {
   useEffect(() => {
     fetchTicket();
   }, [id]);
+
+  useEffect(() => {
+    setAssignmentDraft(ticket?.assignedTo?._id || "");
+  }, [ticket]);
+
+  const handleClaim = async () => {
+    setActionLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/tickets/${id}/assign`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+      if (res.ok) {
+        fetchTicket();
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleAssign = async () => {
+    if (!assignmentDraft) return;
+    setActionLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/tickets/${id}/assign`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ moderatorId: assignmentDraft }),
+      });
+      if (res.ok) {
+        fetchTicket();
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   if (loading)
     return <div className="text-center mt-10 text-gray-500">Loading ticket details...</div>;
@@ -97,12 +162,10 @@ export default function TicketDetailsPage() {
                 </div>
               )}
 
-              {ticket.assignedTo && (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500 w-28 shrink-0">Assigned To</span>
-                  <span className="text-sm text-gray-700">{ticket.assignedTo?.email}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-500 w-28 shrink-0">Assigned To</span>
+                <span className="text-sm text-gray-700">{ticket.assignedTo?.email || "Unassigned"}</span>
+              </div>
 
               {ticket.createdAt && (
                 <div className="flex items-center gap-3">
@@ -116,6 +179,45 @@ export default function TicketDetailsPage() {
 
         {user?.role !== "user" && (
           <>
+            {user?.role === "moderator" && !ticket.assignedTo && (
+              <button
+                type="button"
+                onClick={handleClaim}
+                disabled={actionLoading}
+                className="mt-5 inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800"
+              >
+                ⚠️ Unassigned — {actionLoading ? "Claiming..." : "Claim this ticket"}
+              </button>
+            )}
+
+            {user?.role === "admin" && (
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                  {ticket.assignedTo?.email || "Unassigned"}
+                </span>
+                <select
+                  className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+                  value={assignmentDraft}
+                  onChange={(e) => setAssignmentDraft(e.target.value)}
+                >
+                  <option value="">Select moderator</option>
+                  {moderators.map((moderator) => (
+                    <option key={moderator._id} value={moderator._id}>
+                      {moderator.email}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={handleAssign}
+                  disabled={actionLoading || !assignmentDraft}
+                  className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  {actionLoading ? "Assigning..." : "Assign"}
+                </button>
+              </div>
+            )}
+
             {ticket.helpfulNotes && (
               <div className="mt-5 pt-5 border-t border-gray-100">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Helpful Notes</p>

@@ -12,13 +12,13 @@ import { onTicketResolved } from "./inngest/functions/on-ticket-resolve.js";
 import { syncResolvedTickets } from "./inngest/functions/sync-resolved-tickets.js";
 import { checkOllamaHealth } from "./utils/llmService.js";
 
-const requiredEnv = ["MONGO_URI", "JWT_SECRET", "GMAIL_USER", "GMAIL_APP_PASSWORD"];
-const missingEnv = requiredEnv.filter((key) => !process.env[key]);
+// const requiredEnv = ["MONGO_URI", "JWT_SECRET", "GMAIL_USER", "GMAIL_APP_PASSWORD"];
+// const missingEnv = requiredEnv.filter((key) => !process.env[key]);
 
-if (missingEnv.length > 0) {
-  console.warn("⚠️  Missing environment variables:", missingEnv.join(", "));
-  console.warn("   Copy .env.example to .env and fill in the values.");
-}
+// if (missingEnv.length > 0) {
+//   console.warn("⚠️  Missing environment variables:", missingEnv.join(", "));
+//   console.warn("   Copy .env.example to .env and fill in the values.");
+// }
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -42,9 +42,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
+// app.get("/api/health", (_req, res) => {
+//   res.json({ status: "ok" });
+// });
 
 app.use("/api/auth", userRoutes);
 app.use("/api/tickets", ticketRoutes);

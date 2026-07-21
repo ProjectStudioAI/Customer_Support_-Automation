@@ -1,0 +1,96 @@
+<svg viewBox="0 0 1300 1191" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+<rect x="0" y="0" width="1300" height="1191" fill="#ffffff"/>
+<text x="650.0" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#1e293b">Ticket Creation → AI Classification → Tiered Response</text>
+<line x1="90.0" y1="110" x2="90.0" y2="1171" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
+<line x1="276.66666666666663" y1="110" x2="276.66666666666663" y2="1171" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
+<line x1="463.3333333333333" y1="110" x2="463.3333333333333" y2="1171" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
+<line x1="650.0" y1="110" x2="650.0" y2="1171" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
+<line x1="836.6666666666666" y1="110" x2="836.6666666666666" y2="1171" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
+<line x1="1023.3333333333334" y1="110" x2="1023.3333333333334" y2="1171" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
+<line x1="1210.0" y1="110" x2="1210.0" y2="1171" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4"/>
+<rect x="622.0" y="539" width="616.0" height="350" fill="none" stroke="#94a3b8" stroke-width="1.5" rx="3"/>
+<rect x="622.0" y="385" width="429.3333333333335" height="154" fill="none" stroke="#94a3b8" stroke-width="1.5" rx="3"/>
+<text x="183.33333333333331" y="122" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">POST /api/tickets</text>
+<line x1="90.0" y1="130" x2="276.66666666666663" y2="130" stroke="#334155" stroke-width="2"/>
+<polygon points="276.66666666666663,130 266.66666666666663,125 266.66666666666663,135" fill="#334155"/>
+<text x="370.0" y="171" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">Ticket.create()</text>
+<line x1="276.66666666666663" y1="179" x2="463.3333333333333" y2="179" stroke="#334155" stroke-width="2"/>
+<polygon points="463.3333333333333,179 453.3333333333333,174 453.3333333333333,184" fill="#334155"/>
+<text x="463.3333333333333" y="220" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">send(&quot;ticket/created&quot;)</text>
+<line x1="276.66666666666663" y1="228" x2="650.0" y2="228" stroke="#334155" stroke-width="2"/>
+<polygon points="650.0,228 640.0,223 640.0,233" fill="#334155"/>
+<text x="183.33333333333331" y="269" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">201 Created (immediate)</text>
+<line x1="276.66666666666663" y1="277" x2="90.0" y2="277" stroke="#64748b" stroke-dasharray="6,4" stroke-width="2"/>
+<polygon points="90.0,277 100.0,272 100.0,282" fill="#334155"/>
+<text x="556.6666666666666" y="328" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">fetch ticket + creator</text>
+<line x1="650.0" y1="336" x2="463.3333333333333" y2="336" stroke="#334155" stroke-width="2"/>
+<polygon points="463.3333333333333,336 473.3333333333333,331 473.3333333333333,341" fill="#334155"/>
+<text x="743.3333333333333" y="407" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">classifyTicket()</text>
+<line x1="650.0" y1="415" x2="836.6666666666666" y2="415" stroke="#334155" stroke-width="2"/>
+<polygon points="836.6666666666666,415 826.6666666666666,410 826.6666666666666,420" fill="#334155"/>
+<text x="836.6666666666667" y="482" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">findSimilarTickets()</text>
+<line x1="650.0" y1="490" x2="1023.3333333333334" y2="490" stroke="#334155" stroke-width="2"/>
+<polygon points="1023.3333333333334,490 1013.3333333333334,485 1013.3333333333334,495" fill="#334155"/>
+<path d="M 622.0 385 h 150 v 16 l -10 8 h -140 z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/><text x="630.0" y="401" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#1e293b">par  AI classification / similarity search</text>
+<line x1="622.0" y1="464" x2="1051.3333333333335" y2="464" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,4"/>
+<text x="630.0" y="479" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#1e293b">and</text>
+<rect x="590.0" y="569" width="120.0" height="52" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.3" rx="3"/>
+<text x="650.0" y="591" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#78350f">score &gt;= 0.92 (duplicate): reuse matched resolution, skip</text><text x="650.0" y="608" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#78350f">LLM</text>
+<text x="930.0" y="659" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">generateResponse(context = top matches)</text>
+<line x1="650.0" y1="667" x2="1210.0" y2="667" stroke="#334155" stroke-width="2"/>
+<polygon points="1210.0,667 1200.0,662 1200.0,672" fill="#334155"/>
+<text x="930.0" y="708" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">grounded draft</text>
+<line x1="1210.0" y1="716" x2="650.0" y2="716" stroke="#64748b" stroke-dasharray="6,4" stroke-width="2"/>
+<polygon points="650.0,716 660.0,711 660.0,721" fill="#334155"/>
+<text x="930.0" y="783" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">generateResponse(context = null)</text>
+<line x1="650.0" y1="791" x2="1210.0" y2="791" stroke="#334155" stroke-width="2"/>
+<polygon points="1210.0,791 1200.0,786 1200.0,796" fill="#334155"/>
+<text x="930.0" y="832" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">general draft</text>
+<line x1="1210.0" y1="840" x2="650.0" y2="840" stroke="#64748b" stroke-dasharray="6,4" stroke-width="2"/>
+<polygon points="650.0,840 660.0,835 660.0,845" fill="#334155"/>
+<path d="M 622.0 539 h 150 v 16 l -10 8 h -140 z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/><text x="630.0" y="555" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#1e293b">alt  tier decision on top match score</text>
+<line x1="622.0" y1="641" x2="1238.0" y2="641" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,4"/>
+<text x="630.0" y="656" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#1e293b">else score 0.5 - 0.92 (augmented)</text>
+<line x1="622.0" y1="765" x2="1238.0" y2="765" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5,4"/>
+<text x="630.0" y="780" font-family="Helvetica, Arial, sans-serif" font-size="11.5" font-weight="bold" fill="#1e293b">else score &lt; 0.5 (cold)</text>
+<text x="556.6666666666666" y="887" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">update ticket (status, tier, aiMetrics)</text>
+<line x1="650.0" y1="895" x2="463.3333333333333" y2="895" stroke="#334155" stroke-width="2"/>
+<polygon points="463.3333333333333,895 473.3333333333333,890 473.3333333333333,900" fill="#334155"/>
+<text x="370.0" y="936" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">confirmation email (tier-appropriate)</text>
+<line x1="650.0" y1="944" x2="90.0" y2="944" stroke="#334155" stroke-width="2"/>
+<polygon points="90.0,944 100.0,939 100.0,949" fill="#334155"/>
+<text x="556.6666666666666" y="970" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">assign moderator (dept -&gt; any moderator -&gt;</text><text x="556.6666666666666" y="985" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">admin)</text>
+<line x1="650.0" y1="993" x2="463.3333333333333" y2="993" stroke="#334155" stroke-width="2"/>
+<polygon points="463.3333333333333,993 473.3333333333333,988 473.3333333333333,998" fill="#334155"/>
+<path d="M 650.0 1057 C 720.0 1057, 720.0 1091, 650.0 1091" fill="none" stroke="#334155" stroke-width="2"/>
+<polygon points="650.0,1091 660.0,1086 660.0,1096" fill="#334155"/>
+<text x="664.0" y="1071" font-family="Helvetica, Arial, sans-serif" font-size="12.5" fill="#1e293b">notify moderator + admin</text>
+<rect x="45.0" y="70" width="90" height="34" rx="6" fill="#1f2937"/>
+<text x="90.0" y="92" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Customer</text>
+<rect x="45.0" y="1157" width="90" height="34" rx="6" fill="#1f2937"/>
+<text x="90.0" y="1179" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Customer</text>
+<rect x="225.66666666666663" y="70" width="102" height="34" rx="6" fill="#1f2937"/>
+<text x="276.66666666666663" y="92" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Express API</text>
+<rect x="225.66666666666663" y="1157" width="102" height="34" rx="6" fill="#1f2937"/>
+<text x="276.66666666666663" y="1179" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Express API</text>
+<rect x="418.3333333333333" y="70" width="90" height="34" rx="6" fill="#1f2937"/>
+<text x="463.3333333333333" y="92" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">MongoDB</text>
+<rect x="418.3333333333333" y="1157" width="90" height="34" rx="6" fill="#1f2937"/>
+<text x="463.3333333333333" y="1179" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">MongoDB</text>
+<rect x="605.0" y="70" width="90" height="34" rx="6" fill="#1f2937"/>
+<text x="650.0" y="92" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Inngest</text>
+<rect x="605.0" y="1157" width="90" height="34" rx="6" fill="#1f2937"/>
+<text x="650.0" y="1179" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Inngest</text>
+<rect x="789.6666666666666" y="70" width="94" height="34" rx="6" fill="#1f2937"/>
+<text x="836.6666666666666" y="92" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Classifier</text>
+<rect x="789.6666666666666" y="1157" width="94" height="34" rx="6" fill="#1f2937"/>
+<text x="836.6666666666666" y="1179" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Classifier</text>
+<rect x="978.3333333333334" y="70" width="90" height="34" rx="6" fill="#1f2937"/>
+<text x="1023.3333333333334" y="92" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Qdrant</text>
+<rect x="978.3333333333334" y="1157" width="90" height="34" rx="6" fill="#1f2937"/>
+<text x="1023.3333333333334" y="1179" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Qdrant</text>
+<rect x="1163.0" y="70" width="94" height="34" rx="6" fill="#1f2937"/>
+<text x="1210.0" y="92" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Ollama LLM</text>
+<rect x="1163.0" y="1157" width="94" height="34" rx="6" fill="#1f2937"/>
+<text x="1210.0" y="1179" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">Ollama LLM</text>
+</svg>

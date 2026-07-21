@@ -19,6 +19,7 @@
 
 
 import jwt from "jsonwebtoken";
+import User from "../models/user.js";
 
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -41,6 +42,18 @@ export const authenticate = (req, res, next) => {
   } catch (error) {
     // console.log("JWT verification error:", error.message);
     res.status(401).json({ error: "Invalid token" });
+  }
+};
+
+export const requireVerified = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).select("isVerified");
+    if (!user || !user.isVerified) {
+      return res.status(403).json({ error: "Please verify your email before continuing." });
+    }
+    next();
+  } catch (err) {
+    res.status(500).json({ error: "Verification check failed" });
   }
 };
 
