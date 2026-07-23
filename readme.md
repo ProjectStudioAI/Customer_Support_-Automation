@@ -193,75 +193,88 @@ if it's unreachable — the system degrades to retrieval-only responses in that 
 
 ## 📸 Screenshots
 
-The following screenshots demonstrate the complete workflow of the AI Ticket Assistant, covering the customer experience, moderator workflow, AI-assisted resolution process, and administrator dashboard.
-
-### 1. Customer – Ticket Creation
-
-The SignUp Page
-
-![Customer Ticket Creation](./ScreenShots/User_1.png)
+The following screenshots demonstrate the complete workflow of the AI-powered Customer Support Automation System, showcasing how customers create tickets, how moderators resolve them with AI assistance, and how administrators manage the platform.
 
 ---
 
-### 2. Customer – Ticket Confirmation
+### 1. User Authentication
+**File:** `ScreenShots/User_1.png`
 
-Customer portal showing all submitted tickets along with their current status, assigned priority, assigned to, and Department Categorization.
+Secure login page where users authenticate before accessing the platform. Role-based authentication ensures that customers, moderators, and administrators are redirected to their respective dashboards after successful login.
 
-
-![Ticket Confirmation](./ScreenShots/User_2.png)
-
----
-
-### 3. Customer – Ticket Status
-
-Confirmation page displayed immediately after ticket submission. The customer receives a ticket ID while AI-based categorization, and knowledge retrieval continue in the background.
-
-![Customer Dashboard](./ScreenShots/User_3.png)
+![Login](./ScreenShots/User_1.png)
 
 ---
 
-### 4. Moderator – Assigned Tickets
+### 2. Customer Dashboard & Ticket Creation
+**File:** `ScreenShots/User_2.png`
 
-Moderator dashboard displaying tickets assigned to the moderator. It provides quick visibility into ticket priority, department, status, and enables moderators to review individual requests.
+Customer dashboard used to submit new support requests and track previously created tickets. After submission, each ticket is automatically processed by the AI pipeline for intent classification, priority prediction, department routing, and knowledge retrieval.
+
+![Customer Dashboard](./ScreenShots/User_2.png)
+
+---
+
+### 3. Customer Ticket Details
+**File:** `ScreenShots/User_3.png`
+
+Detailed customer view displaying the submitted ticket, its current status, predicted priority, assigned department, and moderator assignment. Customers can monitor the progress of their requests throughout the resolution process.
+
+![Ticket Details](./ScreenShots/User_3.png)
+
+---
+
+### 4. Moderator Dashboard
+**File:** `ScreenShots/Moderator_1.png`
+
+Moderator workspace displaying assigned and unassigned tickets. Moderators can claim tickets, review customer requests, and manage their workload while the system automatically routes tickets to the appropriate personnel.
 
 ![Moderator Dashboard](./ScreenShots/Moderator_1.png)
 
 ---
 
-### 5. Internal Resolution Note
+### 5. AI-Assisted Resolution (Helpful Notes)
+**File:** `ScreenShots/HelpFulNotes_2.png`
 
-Detailed ticket view where internal resolution notes appear retrieved from similar historical tickets. This demonstrates the Retrieval-Augmented Generation (RAG) workflow used to assist moderators in resolving tickets faster while maintaining consistency.
+When a ticket is opened, the system retrieves semantically similar historical tickets from the knowledge base and presents helpful resolution notes with similarity scores. These AI-generated recommendations assist moderators in resolving issues more quickly and consistently.
 
-![Helpful Notes](./ScreenShots/HelpFulNotes_1.png)
+![Helpful Notes](./ScreenShots/HelpFulNotes_2.png)
 
 ---
-### 6. Helpful Notes
 
+### 6. Resolved Ticket with Internal Resolution Notes
+**File:** `ScreenShots/HelpFulNotes_1.png`
 
-![Helpful Nodes1](./ScreenShots//HelpFulNotes_2.png)
+Completed ticket showing the final resolution, assigned moderator, ticket metadata, and internal resolution notes. Once resolved, the ticket is locked to preserve the resolution history while remaining visible to the customer.
+
+![Resolved Ticket](./ScreenShots/HelpFulNotes_1.png)
+
 ---
 
-### 7. Admin Dashboard – Overview
+### 7. Admin Dashboard – Ticket Management
+**File:** `ScreenShots/Admin_1.png`
 
-Administrative dashboard providing a global view of tickets, users, departments, and overall system activity.
+Administrator dashboard displaying all tickets across the system. Administrators can assign or reassign tickets to moderators, monitor ticket distribution, and oversee the support workflow.
 
 ![Admin Dashboard](./ScreenShots/Admin_1.png)
 
 ---
 
-### 8. Admin – User & Department Management
+### 8. Admin Panel – User Management
+**File:** `ScreenShots/Admin_2.png`
 
-Interface for managing users and assigning roles responsible for handling support tickets.
+Administrative interface for managing platform users. Administrators can search users, modify user roles, and control permissions for customers, moderators, and other administrators.
 
-![Admin User Management](./ScreenShots/Admin_2.png)
+![User Management](./ScreenShots/Admin_2.png)
 
 ---
 
-### 9. Admin – Analytics & Monitoring
+### 9. Admin Ticket Inspection
+**File:** `ScreenShots/Admin_3.png`
 
-Administrative page displaying the details of every ticket
+Detailed administrative view of an individual ticket, including ticket metadata, assignment information, resolution status, and internal notes. This allows administrators to audit and monitor ticket handling across the platform.
 
-![Admin Analytics](./ScreenShots/Admin_3.png)
+![Admin Ticket View](./ScreenShots/Admin_3.png)
 ---
 
 ## Known Limitations
