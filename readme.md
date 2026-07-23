@@ -191,35 +191,80 @@ if it's unreachable — the system degrades to retrieval-only responses in that 
 
 ---
 
-## Screenshots
+## 📸 Screenshots
 
-> Images go in [`screenshots/`](./screenshots) — add them as the corresponding features are
-> captured, then link each one under its heading below (e.g. `![Ticket Creation](./screenshots/ticket-creation-form.png)`).
-> These five cover the product end to end, one per role/stage, and are the minimum set
-> needed to show the system actually working.
+The following screenshots demonstrate the complete workflow of the AI Ticket Assistant, covering the customer experience, moderator workflow, AI-assisted resolution process, and administrator dashboard.
 
-### 1. Ticket Creation Form (Customer)
-The customer-facing form used to submit a new ticket (title + description). Shows the
-immediate confirmation the customer sees while classification and retrieval run in the
-background.
+### 1. Customer – Ticket Creation
+**File:** `ScreenShots/User_1.png`
 
-### 2. Moderator — Assigned Ticket List
-The moderator's view of tickets assigned to them, showing status and tier at a glance
-before opening an individual ticket.
+The SignUp Page
 
-### 3. Ticket Detail — Helpful Notes / AI Guidance
-The moderator-only view of a ticket's AI draft response and, where applicable, the
-"Helpful Notes" pulled from a matched past resolution — demonstrates the tiered
-retrieval/generation output described in [Core Feature](#core-feature-tiered-retrieval--generation).
+![Customer Ticket Creation](./ScreenShots/User_1.png)
 
-### 4. Admin Dashboard
-The admin's full-visibility view across all tickets and users, including role/department
-management.
+---
 
-### 5. Confirmation Email (Tier-Appropriate)
-The automated email a customer receives on ticket creation, with content that varies by
-tier (duplicate / augmented / cold), as described in the Core Feature section.
+### 2. Customer – Ticket Confirmation
+**File:** `ScreenShots/User_2.png`
 
+Customer portal showing all submitted tickets along with their current status, assigned priority, and latest updates.
+
+
+![Ticket Confirmation](./ScreenShots/User_2.png)
+
+---
+
+### 3. Customer – Ticket Status
+**File:** `ScreenShots/User_3.png`
+
+Confirmation page displayed immediately after ticket submission. The customer receives a ticket ID while AI-based categorization, duplicate detection, and knowledge retrieval continue in the background.
+
+![Customer Dashboard](./ScreenShots/User_3.png)
+
+---
+
+### 4. Moderator – Assigned Tickets
+**File:** `ScreenShots/Moderator_1.png`
+
+Moderator dashboard displaying tickets assigned to the moderator. It provides quick visibility into ticket priority, department, status, and enables moderators to review individual requests.
+
+![Moderator Dashboard](./ScreenShots/Moderator_1.png)
+
+---
+
+### 5. AI Resolution & Helpful Notes
+**File:** `ScreenShots/HelpFulNotes_1.png`
+
+Detailed ticket view where the AI-generated response is presented alongside internal resolution notes retrieved from similar historical tickets. This demonstrates the Retrieval-Augmented Generation (RAG) workflow used to assist moderators in resolving tickets faster while maintaining consistency.
+
+![Helpful Notes](./ScreenShots/HelpFulNotes_1.png)
+
+---
+
+### 6. Admin Dashboard – Overview
+**File:** `ScreenShots/Admin_1.png`
+
+Administrative dashboard providing a global view of tickets, users, departments, and overall system activity.
+
+![Admin Dashboard](./ScreenShots/Admin_1.png)
+
+---
+
+### 7. Admin – User & Department Management
+**File:** `ScreenShots/Admin_2.png`
+
+Interface for managing users, assigning roles, and configuring departments responsible for handling support tickets.
+
+![Admin User Management](./ScreenShots/Admin_2.png)
+
+---
+
+### 8. Admin – Analytics & Monitoring
+**File:** `ScreenShots/Admin_3.png`
+
+Administrative analytics page displaying ticket distribution, processing statistics, and overall system performance to assist with operational monitoring.
+
+![Admin Analytics](./ScreenShots/Admin_3.png)
 ---
 
 ## Known Limitations

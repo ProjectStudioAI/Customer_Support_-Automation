@@ -22,7 +22,7 @@ async function main() {
     const [totals] = await Ticket.aggregate([
       {
         $group: {
-          _id: null,
+          _id: null,    //don't actually split into separate buckets — collapse everything in the collection into one single group
           totalTickets: { $sum: 1 },
           avgTopMatchScore: { $avg: "$aiMetrics.topMatchScore" },
           llmCalledCount: {
