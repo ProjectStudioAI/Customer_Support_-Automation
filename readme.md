@@ -205,7 +205,7 @@ The SignUp Page
 
 ### 2. Customer – Ticket Confirmation
 
-Customer portal showing all submitted tickets along with their current status, assigned priority, and latest updates.
+Customer portal showing all submitted tickets along with their current status, assigned priority, assigned to, and Department Categorization.
 
 
 ![Ticket Confirmation](./ScreenShots/User_2.png)
@@ -214,7 +214,7 @@ Customer portal showing all submitted tickets along with their current status, a
 
 ### 3. Customer – Ticket Status
 
-Confirmation page displayed immediately after ticket submission. The customer receives a ticket ID while AI-based categorization, duplicate detection, and knowledge retrieval continue in the background.
+Confirmation page displayed immediately after ticket submission. The customer receives a ticket ID while AI-based categorization, and knowledge retrieval continue in the background.
 
 ![Customer Dashboard](./ScreenShots/User_3.png)
 
@@ -228,15 +228,20 @@ Moderator dashboard displaying tickets assigned to the moderator. It provides qu
 
 ---
 
-### 5. AI Resolution & Helpful Notes
+### 5. Internal Resolution Note
 
-Detailed ticket view where the AI-generated response is presented alongside internal resolution notes retrieved from similar historical tickets. This demonstrates the Retrieval-Augmented Generation (RAG) workflow used to assist moderators in resolving tickets faster while maintaining consistency.
+Detailed ticket view where internal resolution notes appear retrieved from similar historical tickets. This demonstrates the Retrieval-Augmented Generation (RAG) workflow used to assist moderators in resolving tickets faster while maintaining consistency.
 
 ![Helpful Notes](./ScreenShots/HelpFulNotes_1.png)
 
 ---
+### 6. Helpful Notes
 
-### 6. Admin Dashboard – Overview
+
+![Helpful Nodes1](./ScreenShots//HelpFulNotes_2.png)
+---
+
+### 7. Admin Dashboard – Overview
 
 Administrative dashboard providing a global view of tickets, users, departments, and overall system activity.
 
@@ -244,17 +249,17 @@ Administrative dashboard providing a global view of tickets, users, departments,
 
 ---
 
-### 7. Admin – User & Department Management
+### 8. Admin – User & Department Management
 
-Interface for managing users, assigning roles, and configuring departments responsible for handling support tickets.
+Interface for managing users and assigning roles responsible for handling support tickets.
 
 ![Admin User Management](./ScreenShots/Admin_2.png)
 
 ---
 
-### 8. Admin – Analytics & Monitoring
+### 9. Admin – Analytics & Monitoring
 
-Administrative analytics page displaying ticket distribution, processing statistics, and overall system performance to assist with operational monitoring.
+Administrative page displaying the details of every ticket
 
 ![Admin Analytics](./ScreenShots/Admin_3.png)
 ---
