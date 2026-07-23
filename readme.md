@@ -196,7 +196,6 @@ if it's unreachable — the system degrades to retrieval-only responses in that 
 The following screenshots demonstrate the complete workflow of the AI Ticket Assistant, covering the customer experience, moderator workflow, AI-assisted resolution process, and administrator dashboard.
 
 ### 1. Customer – Ticket Creation
-**File:** `ScreenShots/User_1.png`
 
 The SignUp Page
 
@@ -205,7 +204,6 @@ The SignUp Page
 ---
 
 ### 2. Customer – Ticket Confirmation
-**File:** `ScreenShots/User_2.png`
 
 Customer portal showing all submitted tickets along with their current status, assigned priority, and latest updates.
 
@@ -215,7 +213,6 @@ Customer portal showing all submitted tickets along with their current status, a
 ---
 
 ### 3. Customer – Ticket Status
-**File:** `ScreenShots/User_3.png`
 
 Confirmation page displayed immediately after ticket submission. The customer receives a ticket ID while AI-based categorization, duplicate detection, and knowledge retrieval continue in the background.
 
@@ -224,7 +221,6 @@ Confirmation page displayed immediately after ticket submission. The customer re
 ---
 
 ### 4. Moderator – Assigned Tickets
-**File:** `ScreenShots/Moderator_1.png`
 
 Moderator dashboard displaying tickets assigned to the moderator. It provides quick visibility into ticket priority, department, status, and enables moderators to review individual requests.
 
@@ -233,7 +229,6 @@ Moderator dashboard displaying tickets assigned to the moderator. It provides qu
 ---
 
 ### 5. AI Resolution & Helpful Notes
-**File:** `ScreenShots/HelpFulNotes_1.png`
 
 Detailed ticket view where the AI-generated response is presented alongside internal resolution notes retrieved from similar historical tickets. This demonstrates the Retrieval-Augmented Generation (RAG) workflow used to assist moderators in resolving tickets faster while maintaining consistency.
 
@@ -242,7 +237,6 @@ Detailed ticket view where the AI-generated response is presented alongside inte
 ---
 
 ### 6. Admin Dashboard – Overview
-**File:** `ScreenShots/Admin_1.png`
 
 Administrative dashboard providing a global view of tickets, users, departments, and overall system activity.
 
@@ -251,7 +245,6 @@ Administrative dashboard providing a global view of tickets, users, departments,
 ---
 
 ### 7. Admin – User & Department Management
-**File:** `ScreenShots/Admin_2.png`
 
 Interface for managing users, assigning roles, and configuring departments responsible for handling support tickets.
 
@@ -260,7 +253,6 @@ Interface for managing users, assigning roles, and configuring departments respo
 ---
 
 ### 8. Admin – Analytics & Monitoring
-**File:** `ScreenShots/Admin_3.png`
 
 Administrative analytics page displaying ticket distribution, processing statistics, and overall system performance to assist with operational monitoring.
 
