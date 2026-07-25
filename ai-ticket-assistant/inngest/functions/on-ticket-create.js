@@ -64,14 +64,14 @@ export const onTicketCreated = inngest.createFunction(
             helpfulNotes = topMatch.fromHuman ? (topMatch.response || null) : null;
             if (helpfulNotes) console.log(`Possible duplicate detected: ${ticketId}`);
           } else {
-            tier = topMatch && topMatch.score >= 0.5 ? "augmented" : "cold";
+            tier = topMatch && topMatch.score >= 0.75 ? "augmented" : "cold";
             llmCalled = true;
             const startedAt = Date.now();
             try {
               const context =
                 tier === "augmented"
                   ? similarTickets.all
-                      .filter((r) => r.score >= 0.6)
+                      .filter((r) => r.score >= 0.75)
                       .map((r) => `Past query: ${r.title}\nResolution: ${r.response}`)
                       .join("\n\n")
                   : null;
