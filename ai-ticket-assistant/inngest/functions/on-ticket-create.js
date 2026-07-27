@@ -59,19 +59,19 @@ export const onTicketCreated = inngest.createFunction(
           let llmLatencyMs = null;
           let llmFailed = false;
 
-          if (topMatch && topMatch.score >= 0.92) {
+          if (topMatch && topMatch.score >= 0.80) {
             tier = "duplicate";
             helpfulNotes = topMatch.fromHuman ? (topMatch.response || null) : null;
             if (helpfulNotes) console.log(`Possible duplicate detected: ${ticketId}`);
           } else {
-            tier = topMatch && topMatch.score >= 0.75 ? "augmented" : "cold";
+            tier = topMatch && topMatch.score >= 0.76 ? "augmented" : "cold";
             llmCalled = true;
             const startedAt = Date.now();
             try {
               const context =
                 tier === "augmented"
                   ? similarTickets.all
-                      .filter((r) => r.score >= 0.75)
+                      .filter((r) => r.score >= 0.76)
                       .map((r) => `Past query: ${r.title}\nResolution: ${r.response}`)
                       .join("\n\n")
                   : null;

@@ -3,7 +3,7 @@ const MODEL_NAME = process.env.OLLAMA_MODEL || "qwen2.5:3b-instruct-q4_K_M";
 
 function buildPrompt(userQuery, retrievedContext, similarityScore) {
   const groundingNote =
-    similarityScore >= 0.75
+    similarityScore >= 0.76
       ? `Reference these past resolved tickets as grounding context:\n\n${retrievedContext}\n\nAdapt the relevant information to answer the current query. Stay consistent with the tone and facts in the reference material.`
       : `No strong matching past tickets were found. Answer using general customer support best practices. Be honest that this may need human review if you are not confident.`;
 
