@@ -28,7 +28,7 @@ app.use(
     origin: [
       process.env.APP_URL || "http://localhost:5173",
       "http://localhost:5173",
-      "https://customer-support-automation-six.vercel.app/",
+      "https://customer-support-automation-six.vercel.app",
     ],
     methods: "GET,POST,PUT,DELETE,PATCH",
     allowedHeaders: ["Content-Type", "Authorization"],
