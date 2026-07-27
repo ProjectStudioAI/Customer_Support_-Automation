@@ -36,7 +36,7 @@ export async function generateResponse(userQuery, retrievedContext, similaritySc
           top_p: 0.9,
         },
       }),
-      signal: AbortSignal.timeout(8000),
+      // signal: AbortSignal.timeout(8000),
     });
 
     if (!res.ok) {

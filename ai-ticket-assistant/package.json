@@ -26,6 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
     "nodemailer": "^7.0.3",
-    "onnxruntime-node": "^1.27.0"
+    "onnxruntime-node": "^1.27.0",
+    "xlsx": "^0.18.5"
   }
 }
